@@ -4,15 +4,17 @@ import { StrategyLab } from "@/components/strategy-lab";
 import { Faq } from "@/components/faq";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { MarketplaceArena } from "@/components/marketplace-arena";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-12">
           <Hero />
           <MarketInsights />
+          <MarketplaceArena />
           <StrategyLab />
           <Faq />
         </div>

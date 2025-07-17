@@ -1,203 +1,271 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { optimizeStrategyRecommendations, OptimizeStrategyOutput, OptimizeStrategyInput } from '@/ai/flows/optimize-strategy-recommendations';
+import { Loader2 } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
-const scenarioResultData = [
-  { name: 'Meta Ads', value: 50 },
-  { name: 'Google Ads', value: 30 },
-  { name: 'TikTok Ads', value: 20 },
-];
+type BusinessModel = {
+    title: string;
+    description: string;
+    recommendation: string;
+};
 
-const COLORS = ['#FF8042', '#00C49F', '#8884d8'];
+const businessModels: { [key: string]: { [key: string]: BusinessModel } } = {
+    'Untung Tipis': {
+        'Baru Mulai': { title: 'The Hustler', description: 'Fokus pada volume penjualan tinggi dan perputaran cepat. Strategi harga kompetitif adalah kunci.', recommendation: 'Rekomendasi: TikTok Shop, Shopee.' },
+        'Sudah Kuat': { title: 'Market Leader', description: 'Dominasi pasar dengan skala besar dan efisiensi operasional. Pertahankan pangsa pasar.', recommendation: 'Rekomendasi: Shopee, Tokopedia.' },
+    },
+    'Untung Tebal': {
+        'Baru Mulai': { title: 'Spesialis Niche', description: 'Targetkan segmen spesifik dengan produk unik. Branding dan cerita produk jadi ujung tombak.', recommendation: 'Rekomendasi: Instagram, Website (Shopify).' },
+        'Sudah Kuat': { title: 'Merek Premium', description: 'Jual nilai dan status, bukan cuma produk. Pengalaman pelanggan harus premium.', recommendation: 'Rekomendasi: Website, Lazada LazMall.' },
+    }
+};
 
 export function StrategyLab() {
-  const [profit, setProfit] = useState<number | null>(null);
-  const [sellingPrice, setSellingPrice] = useState('');
-  const [buyingPrice, setBuyingPrice] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [aiResult, setAiResult] = useState<OptimizeStrategyOutput | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-  const calculateProfit = () => {
-    const sp = parseFloat(sellingPrice);
-    const bp = parseFloat(buyingPrice);
-    if (!isNaN(sp) && !isNaN(bp)) {
-      setProfit(sp - bp);
-    }
-  };
+    const [formState, setFormState] = useState({
+        scenarioName: 'Sambal Roa Nona Manis',
+        targetAudience: 'Karyawan kantoran, suka pedas',
+        marginModel: 'Untung Tebal',
+        brandStrength: 'Baru Mulai',
+        sellingPrice: 90000,
+        buyingPrice: 8998,
+        cac: 19998,
+        otherCosts: 4,
+        fixedCosts: 10000000,
+        salesTarget: 998,
+        marketingBudget: 20000000,
+        budgetAllocation: {
+            "Video Content & Ads": 25,
+            "KOL & Afiliasi": 25,
+            "Promosi & Diskon": 25,
+            "Kanal Lainnya": 25,
+        }
+    });
 
-  const resetProfitCalc = () => {
-    setSellingPrice('');
-    setBuyingPrice('');
-    setProfit(null);
-  };
-  
-  return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className="space-y-8">
-        {/* Profit Calculator Card */}
-        <Card className="rounded-xl shadow-md">
-          <CardHeader>
-            <CardTitle>Kalkulator Profit Bisnis</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="selling-price">Harga Jual</Label>
-              <Input id="selling-price" type="number" placeholder="0" value={sellingPrice} onChange={(e) => setSellingPrice(e.target.value)} />
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setFormState(prevState => ({
+            ...prevState,
+            [id]: ['otherCosts', 'fixedCosts', 'salesTarget', 'marketingBudget', 'sellingPrice', 'buyingPrice', 'cac'].includes(id) ? parseFloat(value) || 0 : value,
+        }));
+    };
+    
+    const handleRadioChange = (name: string, value: string) => {
+        setFormState(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
+    
+    const selectedBusinessModel = useMemo(() => {
+        return businessModels[formState.marginModel]?.[formState.brandStrength];
+    }, [formState.marginModel, formState.brandStrength]);
+    
+    const netProfitPerUnit = useMemo(() => {
+        const otherCostAmount = formState.sellingPrice * (formState.otherCosts / 100);
+        return formState.sellingPrice - formState.buyingPrice - formState.cac - otherCostAmount;
+    }, [formState.sellingPrice, formState.buyingPrice, formState.cac, formState.otherCosts]);
+
+    const breakEvenPoint = useMemo(() => {
+        if (netProfitPerUnit <= 0) return 'N/A';
+        const bep = formState.fixedCosts / netProfitPerUnit;
+        return Math.ceil(bep);
+    }, [formState.fixedCosts, netProfitPerUnit]);
+    
+    
+    const runSimulation = async () => {
+        setIsLoading(true);
+        setError(null);
+        setAiResult(null);
+
+        const marketShare = 3; // Placeholder for market share
+
+        const input: OptimizeStrategyInput = {
+            scenarioName: formState.scenarioName,
+            industry: 'F&B', // Placeholder
+            targetAudience: formState.targetAudience,
+            budgetAllocation: formState.budgetAllocation,
+            marketShare: marketShare,
+            sellingPrice: formState.sellingPrice,
+            buyingPrice: formState.buyingPrice
+        };
+
+        try {
+            const result = await optimizeStrategyRecommendations(input);
+            setAiResult(result);
+        } catch (e: any) {
+            console.error(e);
+            setError("Gagal menjalankan simulasi. Silakan coba lagi.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <section id="strategy-lab" className="space-y-8">
+            <Card className="rounded-xl shadow-md">
+                <CardHeader>
+                    <CardTitle>Data Bisnismu</CardTitle>
+                    <CardDescription>Isi data ini agar AI bisa menganalisis strategimu.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="scenarioName">Nama Produk / Bisnis</Label>
+                            <Input id="scenarioName" value={formState.scenarioName} onChange={handleInputChange} placeholder="Contoh: Sambal Roa Nona Manis" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="targetAudience">Target Pasar Utama</Label>
+                            <Input id="targetAudience" value={formState.targetAudience} onChange={handleInputChange} placeholder="Contoh: Karyawan kantoran, suka pedas" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-xl shadow-md">
+                <CardHeader>
+                    <CardTitle>Model Bisnis & Strategi Harga</CardTitle>
+                    <CardDescription>Pilih model yang paling sesuai, lalu atur harga dan biaya.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-1 space-y-6">
+                        <div>
+                            <Label className="font-semibold">Model Margin</Label>
+                            <RadioGroup value={formState.marginModel} onValueChange={(v) => handleRadioChange('marginModel', v)} className="mt-2">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Untung Tipis" id="margin-thin" />
+                                    <Label htmlFor="margin-thin">Untung Tipis</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Untung Tebal" id="margin-thick" />
+                                    <Label htmlFor="margin-thick">Untung Tebal</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+                         <div>
+                            <Label className="font-semibold">Kekuatan Brand</Label>
+                            <RadioGroup value={formState.brandStrength} onValueChange={(v) => handleRadioChange('brandStrength', v)} className="mt-2">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Baru Mulai" id="brand-new" />
+                                    <Label htmlFor="brand-new">Baru Mulai</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Sudah Kuat" id="brand-strong" />
+                                    <Label htmlFor="brand-strong">Sudah Kuat</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+                        {selectedBusinessModel && (
+                             <Card className="bg-muted">
+                                <CardHeader>
+                                    <CardTitle>{selectedBusinessModel.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm">{selectedBusinessModel.description}</p>
+                                    <p className="text-sm font-semibold mt-2">{selectedBusinessModel.recommendation}</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <h3 className="font-semibold">Kalkulator Harga & Biaya per Produk</h3>
+                             <div className="space-y-2">
+                                <Label htmlFor="sellingPrice">Harga Jual</Label>
+                                <Input id="sellingPrice" type="number" value={formState.sellingPrice} onChange={handleInputChange} placeholder="Rp 0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="buyingPrice">Modal Produk (HPP)</Label>
+                                <Input id="buyingPrice" type="number" value={formState.buyingPrice} onChange={handleInputChange} placeholder="Rp 0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="cac">Biaya Iklan (CAC)</Label>
+                                <Input id="cac" type="number" value={formState.cac} onChange={handleInputChange} placeholder="Rp 0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="otherCosts">Biaya Lain (%)</Label>
+                                <Input id="otherCosts" type="number" value={formState.otherCosts} onChange={handleInputChange} placeholder="0%" />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                             <h3 className="font-semibold">Biaya Tetap & Target Penjualan</h3>
+                             <div className="space-y-2">
+                                <Label htmlFor="fixedCosts">Biaya Tetap / Bulan</Label>
+                                <Input id="fixedCosts" type="number" value={formState.fixedCosts} onChange={handleInputChange} placeholder="Rp 0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="salesTarget">Target Jual / Bulan</Label>
+                                <Input id="salesTarget" type="number" value={formState.salesTarget} onChange={handleInputChange} placeholder="0" />
+                            </div>
+                             <div className="space-y-4 mt-6">
+                                <h3 className="font-semibold">Estimasi Profitabilitas</h3>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <Label>Laba/unit</Label>
+                                        <p className="font-bold">Rp {netProfitPerUnit.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Keuntungan bersih setelah semua biaya dari satu produk terjual.</p>
+                                </div>
+                                <div className="space-y-2">
+                                     <div className="flex justify-between items-center">
+                                        <Label>BEP (unit)</Label>
+                                        <p className="font-bold">{breakEvenPoint}</p>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Jumlah produk yang harus terjual untuk balik modal setiap bulan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="text-center">
+                <Button size="lg" onClick={runSimulation} disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading ? 'Menjalankan Simulasi...' : '⚡ Jalankan Simulasi AI'}
+                </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="buying-price">Harga Beli</Label>
-              <Input id="buying-price" type="number" placeholder="0" value={buyingPrice} onChange={(e) => setBuyingPrice(e.target.value)} />
-            </div>
-            {profit !== null && (
-              <p className="text-lg font-bold">Profit: Rp {profit.toLocaleString('id-ID')}</p>
+
+            {error && (
+                <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             )}
-            <div className="flex gap-4">
-              <Button onClick={calculateProfit}>Hitung</Button>
-              <Button variant="outline" onClick={resetProfitCalc}>Reset</Button>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Strategy Lab Card */}
-        <Card className="rounded-xl shadow-md">
-          <CardHeader>
-            <CardTitle>Laboratorium Strategi</CardTitle>
-            <CardDescription>Masukkan parameter untuk menjalankan simulasi.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="scenario-name">Nama Skenario</Label>
-              <Input id="scenario-name" placeholder="Contoh: Peluncuran Q4" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industri</Label>
-              <Select>
-                <SelectTrigger id="industry">
-                  <SelectValue placeholder="Pilih Industri" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fashion">Fashion</SelectItem>
-                  <SelectItem value="fnb">F&B</SelectItem>
-                  <SelectItem value="electronics">Elektronik</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="target-audience">Target Audiens</Label>
-               <Select>
-                <SelectTrigger id="target-audience">
-                  <SelectValue placeholder="Pilih Audiens" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="genz">Gen Z</SelectItem>
-                  <SelectItem value="millennials">Milenial</SelectItem>
-                  <SelectItem value="family">Keluarga</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="budget-slider">Budget Iklan (bulanan)</Label>
-                <Slider defaultValue={[50]} max={100} step={1} id="budget-slider" />
-            </div>
-            <div className="space-y-4">
-                <Label>Alokasi Kanal</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="meta-ads">Meta Ads (%)</Label>
-                        <Input id="meta-ads" type="number" placeholder="0" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="google-ads">Google Ads (%)</Label>
-                        <Input id="google-ads" type="number" placeholder="0" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="tiktok-ads">TikTok Ads (%)</Label>
-                        <Input id="tiktok-ads" type="number" placeholder="0" />
-                    </div>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="product-price">Harga Produk</Label>
-                    <Input id="product-price" type="number" placeholder="0" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="discount">Diskon (%)</Label>
-                    <Input id="discount" type="number" placeholder="0" />
-                </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="space-y-8">
-        {/* Scenario Result Card */}
-        <Card className="rounded-xl shadow-md">
-            <CardHeader>
-                <CardTitle>Hasil Skenario</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="w-full h-64">
-                    <ResponsiveContainer>
-                        <PieChart>
-                            <Pie data={scenarioResultData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
-                                {scenarioResultData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {aiResult && (
+                <Card className="rounded-xl shadow-md">
+                    <CardHeader>
+                        <CardTitle>Rute Strategi dari Petakan.ai</CardTitle>
+                        <CardDescription>AI sudah memetakan arah terbaik berdasarkan data dan strategi bisnismu. Tinggal jalanin.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h3 className="font-semibold text-lg mb-2">Evaluasi AI</h3>
+                            <p className="text-muted-foreground">{aiResult.evaluation}</p>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold text-lg mb-2">Langkah Nyata</h3>
+                            <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                                {aiResult.recommendations.map((rec, index) => (
+                                    <li key={index}>{rec}</li>
                                 ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Kanal</TableHead>
-                                <TableHead>ROAS</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell>Meta Ads</TableCell>
-                                <TableCell>4.5x</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Google Ads</TableCell>
-                                <TableCell>6.2x</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>TikTok Ads</TableCell>
-                                <TableCell>3.8x</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                            </ul>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-        {/* AI Recommendation Card */}
-        <Card className="rounded-xl shadow-md">
-          <CardHeader>
-            <CardTitle>Rekomendasi AI</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Berdasarkan alokasi budget dan target industri Fashion, kami merekomendasikan untuk meningkatkan budget di TikTok Ads sebesar 15% untuk menjangkau audiens Gen Z yang lebih luas. Pertimbangkan juga untuk membuat konten video pendek yang fokus pada tren terkini untuk meningkatkan engagement.
-            </p>
-            <div className="flex gap-4 mt-6">
-                <Button>Simpan Skenario</Button>
-                <Button variant="outline">Jalankan Skenario Baru</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+        </section>
+    );
 }

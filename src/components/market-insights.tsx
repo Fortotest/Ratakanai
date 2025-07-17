@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { ShoppingBag, Smartphone, Ticket, Truck } from "lucide-react";
 
 const gmvData = [
   { name: 'Jan', value: 30 },
@@ -13,46 +14,75 @@ const gmvData = [
 ];
 
 const marketShareData = [
-  { name: 'Shopee', value: 35 },
-  { name: 'Tokopedia & TikTok', value: 30 },
-  { name: 'Lazada', value: 15 },
-  { name: 'Lainnya', value: 20 },
+  { name: 'Tokopedia & TikTok', value: 39, fill: '#00C49F' },
+  { name: 'Shopee', value: 37, fill: '#FF8042' },
+  { name: 'Lazada', value: 10, fill: '#8884d8' },
+  { name: 'Bukalapak', value: 6, fill: '#3B82F6' },
+  { name: 'Blibli', value: 5, fill: '#1E40AF' },
 ];
 
-const COLORS = ['#FF8042', '#00C49F', '#8884d8', '#3B82F6'];
+const buyerInsights = [
+    { icon: ShoppingBag, label: "Puncak Belanja", value: "Jam 19-21 & Hari Gajian" },
+    { icon: Ticket, label: "Pendorong Utama", value: "82% karena Promo & Diskon" },
+    { icon: Smartphone, label: "Sensitivitas Harga", value: "65% membandingkan harga" },
+    { icon: Truck, label: "Pengiriman Cepat", value: "55% batal jika estimasi lama" },
+]
 
 export function MarketInsights() {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="rounded-xl shadow-md">
+        <section id="market-insights" className="space-y-8">
+            <h2 className="text-3xl font-bold text-center">Wawasan Pasar E-Commerce 2024</h2>
+            <p className="text-center text-muted-foreground">Data terbaru untuk membantumu mengambil keputusan.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Card className="rounded-xl shadow-md lg:col-span-1">
+                    <CardHeader>
+                        <CardTitle>Proyeksi Gross Merchandise Value (GMV)</CardTitle>
+                        <CardDescription>Pasar mulai dewasa, fokus bergeser dari 'bakar uang' ke profitabilitas. Pertumbuhan melambat ke 5% (YoY).</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold mb-4">US$56,5 M</p>
+                        <div className="w-full h-40">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={gmvData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}B`}/>
+                                    <Tooltip />
+                                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card className="rounded-xl shadow-md lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Wawasan Penting Pembeli Digital</CardTitle>
+                        <CardDescription>Pola perilaku kunci yang mendorong penjualan.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-6">
+                        {buyerInsights.map((insight) => (
+                            <div key={insight.label} className="flex items-start gap-4">
+                                <insight.icon className="w-8 h-8 text-primary mt-1" />
+                                <div>
+                                    <p className="font-semibold">{insight.label}</p>
+                                    <p className="text-muted-foreground">{insight.value}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
+             <Card className="rounded-xl shadow-md">
                 <CardHeader>
-                    <CardTitle>Estimasi GMV E-Commerce 2024</CardTitle>
-                    <CardDescription>US$54 Miliar</CardDescription>
+                    <CardTitle>Siapa Raja di Pasar? (Estimasi Pangsa Pasar GMV 2024)</CardTitle>
+                    <CardDescription>Integrasi Tokopedia & TikTok Shop menciptakan duopoli baru yang menantang dominasi Shopee.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="w-full h-40">
-                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={gmvData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
-                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}B`}/>
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="rounded-xl shadow-md">
-                <CardHeader>
-                    <CardTitle>Pangsa Pasar GMV (Estimasi 2025)</CardTitle>
-                </CardHeader>
-                 <CardContent>
-                    <div className="w-full h-48">
+                    <CardContent>
+                    <div className="w-full h-64">
                         <ResponsiveContainer>
                             <PieChart>
-                                <Pie data={marketShareData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} dataKey="value" nameKey="name">
+                                <Pie data={marketShareData} cx="50%" cy="50%" innerRadius={80} outerRadius={110} dataKey="value" nameKey="name" paddingAngle={5}>
                                     {marketShareData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
                                 </Pie>
                                 <Tooltip />
@@ -62,6 +92,6 @@ export function MarketInsights() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </section>
     )
 }

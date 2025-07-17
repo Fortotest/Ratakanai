@@ -7,7 +7,7 @@ export function Header() {
       <div className="container mx-auto flex items-center justify-between">
         <a className="flex items-center justify-center" href="#">
           <Target className="h-6 w-6 text-primary" />
-          <span className="ml-2 text-lg font-bold">Petakan.ai</span>
+          <span className="ml-2 text-lg font-bold">SiapJual.ai</span>
         </a>
         <nav className="hidden md:flex gap-6 items-center">
           <a className="text-sm font-medium hover:underline underline-offset-4" href="#hero">
@@ -16,7 +16,7 @@ export function Header() {
           <a className="text-sm font-medium hover:underline underline-offset-4" href="#faq">
             FAQ
           </a>
-          <Button>Mulai Sekarang</Button>
+          <Button>Mulai Simulasi Gratis</Button>
         </nav>
       </div>
     </header>

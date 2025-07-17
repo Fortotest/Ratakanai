@@ -1,12 +1,13 @@
 import type {Metadata} from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Petakan.ai | Simulasikan Strategi Bisnismu',
-  description: 'Gunakan AI untuk memvalidasi ide, merencanakan keuangan, dan menyusun strategi aksi yang solid untuk pasar e-commerce Indonesia.',
+  title: 'SiapJual.ai | Uji Strategi Bisnismu, Bukan Uangmu.',
+  description: 'Gunakan Simulasi AI untuk melihat proyeksi untung-rugi sebelum mengambil risiko. Gratis, cepat, dan akurat.',
 };
 
 export default function RootLayout({
@@ -16,7 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-50 text-gray-800`}>{children}</body>
+      <body className={`${inter.className} bg-background text-foreground`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
