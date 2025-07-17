@@ -12,9 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { optimizeStrategyRecommendations, OptimizeStrategyOutput } from '@/ai/flows/optimize-strategy-recommendations';
-import { Loader2, Lightbulb } from 'lucide-react';
+import { Loader2, Lightbulb, Compass } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 
@@ -53,15 +53,15 @@ export function StrategyLab() {
     const form = useForm<StrategyFormValues>({
         resolver: zodResolver(strategySchema),
         defaultValues: {
-            scenarioName: 'Q4 Growth Push',
-            industry: 'E-commerce',
-            targetAudience: 'Millennials',
-            marketShare: 15,
-            sellingPrice: 100,
-            buyingPrice: 40,
-            budgetSocialMedia: 40,
-            budgetSearchEngine: 30,
-            budgetEmailMarketing: 15,
+            scenarioName: 'Q4 E-commerce Growth',
+            industry: 'Fashion',
+            targetAudience: 'Urban Millennials',
+            marketShare: 10,
+            sellingPrice: 150,
+            buyingPrice: 50,
+            budgetSocialMedia: 50,
+            budgetSearchEngine: 25,
+            budgetEmailMarketing: 10,
             budgetContentMarketing: 15,
         },
     });
@@ -85,7 +85,7 @@ export function StrategyLab() {
         
         const share = watchedValues.marketShare || 0;
         const mData = [
-            { name: 'Your Market Share', value: share, fill: 'hsl(var(--chart-1))' },
+            { name: 'Your Share', value: share, fill: 'hsl(var(--chart-1))' },
             { name: 'Competitors', value: 100 - share, fill: 'hsl(var(--chart-2))' },
         ];
 
@@ -106,10 +106,10 @@ export function StrategyLab() {
                 sellingPrice: data.sellingPrice,
                 buyingPrice: data.buyingPrice,
                 budgetAllocation: {
-                    socialMedia: data.budgetSocialMedia,
-                    searchEngine: data.budgetSearchEngine,
-                    emailMarketing: data.budgetEmailMarketing,
-                    contentMarketing: data.budgetContentMarketing,
+                    "Social Media": data.budgetSocialMedia,
+                    "Search Engine": data.budgetSearchEngine,
+                    "Email Marketing": data.budgetEmailMarketing,
+                    "Content Marketing": data.budgetContentMarketing,
                 }
             };
             const aiResults = await optimizeStrategyRecommendations(aiInput);
@@ -119,7 +119,7 @@ export function StrategyLab() {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Failed to fetch AI recommendations. Please try again later.",
+                description: "Gagal mendapatkan rekomendasi AI. Coba lagi nanti.",
             });
         } finally {
             setIsLoading(false);
@@ -131,40 +131,40 @@ export function StrategyLab() {
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Strategy Laboratory</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Strategy Simulator</h2>
                         <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Input your business parameters to get AI-powered recommendations for growth and optimization.
+                            Input parameter bisnismu untuk mendapatkan rekomendasi berbasis AI untuk pertumbuhan.
                         </p>
                     </div>
                 </div>
 
-                <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-1 md:gap-12 lg:max-w-none lg:grid-cols-2 mt-12">
+                <div className="mx-auto grid max-w-6xl items-start gap-8 sm:grid-cols-1 md:gap-12 lg:max-w-none lg:grid-cols-2 mt-12">
                     <Card className="rounded-xl shadow-md">
                         <CardHeader>
-                            <CardTitle>Your Strategy</CardTitle>
-                            <CardDescription>Define your current business strategy and goals.</CardDescription>
+                            <CardTitle>Data Bisnis Anda</CardTitle>
+                            <CardDescription>Definisikan strategi dan tujuan bisnismu saat ini.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField control={form.control} name="scenarioName" render={({ field }) => ( <FormItem><FormLabel>Scenario Name</FormLabel><FormControl><Input placeholder="e.g. Q4 Growth" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                        <FormField control={form.control} name="industry" render={({ field }) => ( <FormItem><FormLabel>Industry</FormLabel><FormControl><Input placeholder="e.g. SaaS" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                        <FormField control={form.control} name="scenarioName" render={({ field }) => ( <FormItem><FormLabel>Nama Skenario</FormLabel><FormControl><Input placeholder="e.g. Q4 Growth" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                        <FormField control={form.control} name="industry" render={({ field }) => ( <FormItem><FormLabel>Industri</FormLabel><FormControl><Input placeholder="e.g. Fashion, F&B" {...field} /></FormControl><FormMessage /></FormItem> )} />
                                     </div>
-                                    <FormField control={form.control} name="targetAudience" render={({ field }) => ( <FormItem><FormLabel>Target Audience</FormLabel><FormControl><Input placeholder="e.g. Small Businesses" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                    <FormField control={form.control} name="targetAudience" render={({ field }) => ( <FormItem><FormLabel>Target Audiens</FormLabel><FormControl><Input placeholder="e.g. Mahasiswa, Profesional Muda" {...field} /></FormControl><FormMessage /></FormItem> )} />
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                                        <FormField control={form.control} name="sellingPrice" render={({ field }) => ( <FormItem><FormLabel>Selling Price ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                        <FormField control={form.control} name="buyingPrice" render={({ field }) => ( <FormItem><FormLabel>Buying Price ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                        <FormField control={form.control} name="sellingPrice" render={({ field }) => ( <FormItem><FormLabel>Harga Jual (Rp)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                        <FormField control={form.control} name="buyingPrice" render={({ field }) => ( <FormItem><FormLabel>Harga Pokok (Rp)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                                         <Card className="flex flex-col justify-center items-center bg-muted/50 p-3 rounded-xl h-[72px]">
                                             <CardDescription className="text-xs">Profit / Unit</CardDescription>
-                                            <CardTitle className="text-2xl font-bold">${profitPerUnit >= 0 ? profitPerUnit.toFixed(2) : '0.00'}</CardTitle>
+                                            <CardTitle className="text-2xl font-bold">Rp {profitPerUnit >= 0 ? profitPerUnit.toLocaleString('id-ID') : '0'}</CardTitle>
                                         </Card>
                                     </div>
                                     
                                     <div>
-                                        <Label>Budget Allocation (Total: {totalBudget}%)</Label>
-                                        {totalBudget > 100 && <p className="text-sm text-destructive">Warning: Total budget exceeds 100%.</p>}
+                                        <Label>Alokasi Budget (Total: {totalBudget}%)</Label>
+                                        {totalBudget > 100 && <p className="text-sm text-destructive">Peringatan: Total budget melebihi 100%.</p>}
                                         <div className="space-y-4 pt-2">
                                             {budgetChannels.map(channel => (
                                                 <FormField key={channel.id} control={form.control} name={channel.fieldName}
@@ -181,23 +181,23 @@ export function StrategyLab() {
 
                                     <FormField control={form.control} name="marketShare" render={({ field }) => (
                                         <FormItem>
-                                            <div className="flex justify-between items-center"><FormLabel>Current Market Share</FormLabel><span className='text-sm font-medium'>{field.value}%</span></div>
+                                            <div className="flex justify-between items-center"><FormLabel>Pangsa Pasar Saat Ini</FormLabel><span className='text-sm font-medium'>{field.value}%</span></div>
                                             <FormControl><Slider onValueChange={(value) => field.onChange(value[0])} value={[field.value]} max={100} step={1} /></FormControl>
                                         </FormItem>
                                     )} />
                                     
                                     <Button type="submit" disabled={isLoading || totalBudget > 100} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait</> : 'Get AI Recommendations'}
+                                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menganalisis...</> : 'Dapatkan Rekomendasi AI'}
                                     </Button>
                                 </form>
                             </Form>
                         </CardContent>
                     </Card>
 
-                    <div className="space-y-8">
+                    <div className="space-y-8 sticky top-24">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                              <Card className="rounded-xl shadow-md">
-                                <CardHeader><CardTitle>Market Share</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Pangsa Pasar</CardTitle></CardHeader>
                                 <CardContent>
                                     <ChartContainer config={{}} className="mx-auto aspect-square h-[200px]">
                                         <PieChart>
@@ -205,25 +205,26 @@ export function StrategyLab() {
                                             <Pie data={marketShareData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={2} >
                                                 {marketShareData.map((entry) => ( <Cell key={entry.name} fill={entry.fill} /> ))}
                                             </Pie>
-                                            <Legend content={<p className='text-center text-2xl font-bold'>{watchedValues.marketShare}%</p>}/>
+                                            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-foreground">
+                                                {watchedValues.marketShare}%
+                                            </text>
                                         </PieChart>
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
                             <Card className="rounded-xl shadow-md">
-                                <CardHeader><CardTitle>Budget Allocation</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Alokasi Budget</CardTitle></CardHeader>
                                 <CardContent>
                                     <ChartContainer config={{}} className="mx-auto aspect-square h-[200px]">
                                         <PieChart>
                                             <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                                             <Pie data={budgetData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} labelLine={false}
-                                                label={(props) => {
-                                                    const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
-                                                    if (percent === 0) return null;
+                                                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                                                    if (!percent || percent < 0.05) return null;
                                                     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                                                     const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                                                     const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-                                                    return ( percent > 0.05 ? <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className='text-xs font-bold'> {`${(percent * 100).toFixed(0)}%`} </text> : null);
+                                                    return <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className='text-xs font-bold'>{`${(percent * 100).toFixed(0)}%`}</text>;
                                                 }}>
                                                 {budgetData.map((entry) => ( <Cell key={entry.name} fill={entry.fill} /> ))}
                                             </Pie>
@@ -236,45 +237,30 @@ export function StrategyLab() {
                         {(isLoading || results) && (
                             <Card className="rounded-xl shadow-md">
                                 <CardHeader>
-                                    <CardTitle>Scenario Results & Recommendations</CardTitle>
-                                    {submittedData && <CardDescription>For scenario: "{submittedData.scenarioName}"</CardDescription>}
+                                    <CardTitle className="flex items-center gap-2"><Compass className="text-primary"/> Rute Strategi dari Petakan.ai</CardTitle>
+                                    <CardDescription>AI sudah memetakan arah terbaik berdasarkan data dan strategi bisnismu. Tinggal jalanin.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {isLoading && (
                                         <div className="flex flex-col items-center justify-center gap-4 p-8">
                                             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                                            <p className="text-muted-foreground">AI is analyzing your strategy...</p>
+                                            <p className="text-muted-foreground">AI sedang memetakan strategimu...</p>
                                         </div>
                                     )}
                                     {results && (
                                         <div className="space-y-6">
                                             <div>
-                                                <h3 className="font-semibold flex items-center gap-2 mb-2"><Lightbulb className="text-primary"/> AI Recommendations</h3>
+                                                <h3 className="font-semibold flex items-center gap-2 mb-2"><Lightbulb className="text-primary"/> Evaluasi AI</h3>
+                                                <p className="text-sm text-muted-foreground italic">"{results.evaluation}"</p>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold flex items-center gap-2 mb-2"><Compass className="text-primary"/> Rekomendasi Aksi</h3>
                                                 <ul className="list-disc space-y-2 pl-5 text-sm">
                                                     {results.recommendations.map((rec, index) => (
                                                         <li key={index}>{rec}</li>
                                                     ))}
                                                 </ul>
                                             </div>
-                                            {submittedData && (
-                                                <div>
-                                                    <h3 className="font-semibold mb-2">Submitted Budget</h3>
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow>
-                                                                <TableHead>Channel</TableHead>
-                                                                <TableHead className="text-right">Budget %</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            <TableRow><TableCell>Social Media</TableCell><TableCell className="text-right">{submittedData.budgetSocialMedia}%</TableCell></TableRow>
-                                                            <TableRow><TableCell>Search Engine</TableCell><TableCell className="text-right">{submittedData.budgetSearchEngine}%</TableCell></TableRow>
-                                                            <TableRow><TableCell>Email Marketing</TableCell><TableCell className="text-right">{submittedData.budgetEmailMarketing}%</TableCell></TableRow>
-                                                            <TableRow><TableCell>Content Marketing</TableCell><TableCell className="text-right">{submittedData.budgetContentMarketing}%</TableCell></TableRow>
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                            )}
                                         </div>
                                     )}
                                 </CardContent>

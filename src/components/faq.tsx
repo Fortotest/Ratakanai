@@ -4,24 +4,24 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const faqs = [
     {
-        question: "What is Petakan.ai Simulator?",
-        answer: "Petakan.ai Simulator is an AI-powered tool designed to help businesses analyze strategic scenarios, optimize budget allocation, and receive data-driven recommendations to improve market share and profitability."
+        question: "Apa itu Petakan.ai?",
+        answer: "Petakan.ai adalah platform simulasi strategi bisnis berbasis AI. Kami membantu UMKM, founder, dan marketer untuk menguji ide, memproyeksikan profit, dan menyusun rencana aksi yang logis sebelum mengambil risiko finansial."
     },
     {
-        question: "How does the AI generate recommendations?",
-        answer: "Our AI model analyzes the inputs you provide—such as your industry, target audience, budget, and pricing. It compares this information against vast datasets of market trends and business strategies to provide specific, actionable recommendations."
+        question: "Bagaimana AI di Petakan.ai bekerja?",
+        answer: "AI kami menganalisis data yang Anda masukkan—seperti harga jual, biaya, dan model bisnis—lalu mensimulasikan berbagai skenario finansial. Hasilnya adalah proyeksi dan rekomendasi strategis yang didasarkan pada perhitungan, bukan sekadar tebakan."
     },
     {
-        question: "Is my data secure?",
-        answer: "Yes, we prioritize your data's security and privacy. The information you provide is used solely for the purpose of generating your strategy recommendations and is not stored or shared."
+        question: "Apakah data bisnis saya aman?",
+        answer: "Tentu saja. Keamanan dan kerahasiaan data Anda adalah prioritas kami. Informasi yang Anda berikan hanya digunakan untuk keperluan simulasi dan tidak akan pernah dibagikan atau disimpan tanpa izin Anda."
     },
     {
-        question: "Can I use this for any industry?",
-        answer: "Absolutely. Our simulator is designed to be industry-agnostic. Whether you're in e-commerce, SaaS, retail, or any other sector, you can gain valuable insights."
+        question: "Untuk industri apa saja Petakan.ai bisa digunakan?",
+        answer: "Saat ini, fokus utama kami adalah e-commerce dan produk digital. Namun, model kalkulasi kami cukup fleksibel untuk digunakan oleh berbagai jenis bisnis yang ingin memvalidasi profitabilitas dan strategi pemasarannya."
     },
     {
-        question: "What do the different budget channels represent?",
-        answer: "The budget channels (Social Media, Search Engine, etc.) represent common digital marketing areas. Allocating your budget across these helps the AI understand your current marketing mix and suggest optimizations."
+        question: "Apakah hasil simulasinya 100% akurat?",
+        answer: "Simulasi kami memberikan proyeksi yang sangat terukur berdasarkan data yang Anda berikan. Anggap ini sebagai peta yang sangat andal, bukan bola kristal. Keakuratan di dunia nyata akan bergantung pada eksekusi dan faktor pasar lainnya, namun ini adalah langkah awal terbaik untuk mengurangi risiko."
     }
 ];
 
@@ -33,7 +33,7 @@ export function Faq() {
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Frequently Asked Questions</h2>
                         <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Have questions? We've got answers.
+                            Punya pertanyaan? Kami punya jawaban logis.
                         </p>
                     </div>
                 </div>

@@ -6,7 +6,7 @@ export function Header() {
       <div className="container mx-auto flex items-center justify-between">
         <a className="flex items-center justify-center" href="#">
           <Target className="h-6 w-6 text-primary" />
-          <span className="ml-2 text-lg font-bold">Petakan.ai Simulator</span>
+          <span className="ml-2 text-lg font-bold">Petakan.ai</span>
         </a>
         <nav className="hidden md:flex gap-4 sm:gap-6">
           <a className="text-sm font-medium hover:underline underline-offset-4" href="#strategy-lab">
