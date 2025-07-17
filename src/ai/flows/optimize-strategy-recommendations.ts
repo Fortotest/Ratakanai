@@ -23,14 +23,14 @@ const OptimizeStrategyInputSchema = z.object({
     ),
   marketShare: z.number().describe('Current market share of the business (as a percentage).'),
   sellingPrice: z.number().describe('The selling price of the product or service.'),
-  buyingPrice: z.number().describe('The buying price of the product or service.'),
+  buyingPrice: z.number().describe('The buying price (HPP/COGS) of the product or service.'),
 });
 
 export type OptimizeStrategyInput = z.infer<typeof OptimizeStrategyInputSchema>;
 
 const OptimizeStrategyOutputSchema = z.object({
-  evaluation: z.string().describe("AI's overall evaluation of the business strategy's viability and key risks."),
-  recommendations: z.array(z.string()).describe('A list of AI-driven recommendations to optimize the business strategy.'),
+  evaluation: z.string().describe("AI's overall evaluation of the business strategy's viability and key risks. This should be direct, insightful, and contextual to the user's data. If the strategy is projected to be unprofitable, state it clearly and explain why."),
+  recommendations: z.array(z.string()).describe('A list of 3-5 prioritized, actionable, and data-driven recommendations to improve the business strategy. Recommendations should be specific and directly reference the user\'s input data (e.g., pricing, costs).'),
 });
 
 export type OptimizeStrategyOutput = z.infer<typeof OptimizeStrategyOutputSchema>;
@@ -45,11 +45,11 @@ const prompt = ai.definePrompt({
   name: 'optimizeStrategyPrompt',
   input: {schema: OptimizeStrategyInputSchema},
   output: {schema: OptimizeStrategyOutputSchema},
-  prompt: `You are an expert Business Strategy Analyst for the Indonesian e-commerce market. Your goal is to provide a sharp, actionable analysis for founders and marketers.
+  prompt: `You are an expert Business Strategy Analyst for the Indonesian e-commerce market. Your goal is to provide a sharp, actionable analysis for founders and marketers. Your tone should be friendly, but direct and insightful.
 
 Analyze the following business scenario. Provide:
-1.  A concise, honest evaluation of the strategy. If the projection shows a loss or is high-risk, state it clearly and explain why.
-2.  A list of prioritized, actionable recommendations to improve profitability and market position.
+1.  A concise, honest evaluation of the strategy. If the projection based on their numbers shows a loss or is high-risk (e.g., very high BEP compared to target sales), state it clearly and explain why. Be direct, e.g., "Strategi ini berisiko tinggi karena biaya akuisisi pelanggan (CAC) Anda lebih tinggi dari laba per unit."
+2.  A list of 3-5 prioritized, actionable recommendations to improve profitability and market position. These recommendations must be contextual and data-driven, referencing the user's own numbers.
 
 SCENARIO:
 - Scenario Name: {{{scenarioName}}}
@@ -60,9 +60,9 @@ SCENARIO:
 - Selling Price: {{{sellingPrice}}}
 - Buying Price (HPP): {{{buyingPrice}}}
 
-Context: The Indonesian e-commerce market is dominated by Shopee and Tokopedia/TikTok, driven by 'shoppertainment' and aggressive promotions. Consumers are price-sensitive.
+Context: The Indonesian e-commerce market is dominated by Shopee and Tokopedia/TikTok, driven by 'shoppertainment' and aggressive promotions. Consumers are highly price-sensitive. A good ROAS is typically above 4x.
 
-Based on this, generate your evaluation and recommendations. Be direct and insightful.
+Based on this, generate your evaluation and recommendations. Be direct, insightful, and use a tone that is empowering for a startup founder.
 `,
 });
 
