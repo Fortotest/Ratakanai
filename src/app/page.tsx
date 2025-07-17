@@ -1,21 +1,23 @@
-import { Faq } from "@/components/faq";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
+import { MarketInsights } from "@/components/market-insights";
 import { StrategyLab } from "@/components/strategy-lab";
-import { Toaster } from "@/components/ui/toaster";
+import { Faq } from "@/components/faq";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
-      <main className="flex-1">
-        <Hero />
-        <StrategyLab />
-        <Faq />
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <div className="flex flex-col gap-8">
+          <Hero />
+          <MarketInsights />
+          <StrategyLab />
+          <Faq />
+        </div>
       </main>
       <Footer />
-      <Toaster />
     </div>
   );
 }
