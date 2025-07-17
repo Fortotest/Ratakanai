@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'SiapJual.ai | Uji Strategi Bisnismu, Bukan Uangmu.',
+  title: 'Petakan.ai | Uji Strategi Bisnismu, Bukan Uangmu.',
   description: 'Gunakan Simulasi AI untuk melihat proyeksi untung-rugi sebelum mengambil risiko. Gratis, cepat, dan akurat.',
 };
 
